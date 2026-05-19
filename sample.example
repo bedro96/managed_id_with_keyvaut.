@@ -36,7 +36,12 @@ def dump_env_from_keyvault(vault_url: str, env_secret_name: str, output_file: st
     if env_path.is_absolute() or env_path.name != ".env" or resolved_env_path != base_env_path:
         raise ValueError("output_file must be a local '.env' file path")
     fd = os.open(resolved_env_path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
-    with os.fdopen(fd, "w", encoding="utf-8") as env_file:
+    try:
+        env_file = os.fdopen(fd, "w", encoding="utf-8")
+    except Exception:
+        os.close(fd)
+        raise
+    with env_file:
         env_file.write(secret_value)
     return resolved_env_path
 
