@@ -25,7 +25,10 @@ def dump_env_from_keyvault(vault_url: str, env_secret_name: str, output_file: st
 
     env_path = Path(output_file)
     env_path.write_text(secret_value, encoding="utf-8")
-    os.chmod(env_path, 0o600)
+    try:
+        os.chmod(env_path, 0o600)
+    except OSError:
+        pass
     return env_path
 
 
