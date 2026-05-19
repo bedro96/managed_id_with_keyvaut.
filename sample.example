@@ -61,10 +61,13 @@ mcp = FastMCP("managed-identity-keyvault-sample")
 
 @mcp.tool()
 def get_config_value(key: str) -> str:
-    """Return a value from environment loaded from Key Vault .env secret."""
+    """Return an allowed value from environment loaded from Key Vault .env secret."""
     if key not in ALLOWED_CONFIG_KEYS:
-        return ""
-    return os.getenv(key, "")
+        raise PermissionError(f"Access denied for key '{key}'")
+    value = os.getenv(key)
+    if value is None:
+        raise KeyError(f"Configured key '{key}' is not set in environment")
+    return value
 
 
 def bootstrap() -> None:
