@@ -12,6 +12,7 @@ managed_id_with_keyvaut
 ### Required environment variables
 - `KEY_VAULT_URL` (example: `https://<vault-name>.vault.azure.net/`)
 - `KEY_VAULT_ENV_SECRET_NAME` (optional, default: `app-env`)
+- `MCP_ALLOWED_KEYS` (comma-separated keys that `get_config_value` can return)
 
 ### Run
 ```bash

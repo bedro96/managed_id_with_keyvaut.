@@ -10,12 +10,13 @@ FastMCP sample:
 from __future__ import annotations
 
 import os
-import sys
 from pathlib import Path
 
 from azure.identity import ManagedIdentityCredential
 from azure.keyvault.secrets import SecretClient
 from fastmcp import FastMCP
+
+ALLOWED_CONFIG_KEYS: set[str] = set()
 
 
 def dump_env_from_keyvault(vault_url: str, env_secret_name: str, output_file: str = ".env") -> Path:
@@ -30,11 +31,11 @@ def dump_env_from_keyvault(vault_url: str, env_secret_name: str, output_file: st
         ) from exc
 
     env_path = Path(output_file)
-    env_path.write_text(secret_value, encoding="utf-8")
-    try:
-        os.chmod(env_path, 0o600)
-    except OSError as exc:
-        print(f"Warning: could not set secure permissions on {env_path}: {exc}", file=sys.stderr)
+    if env_path.is_absolute() or ".." in env_path.parts or env_path.name != ".env":
+        raise ValueError("output_file must be a local '.env' file path")
+    fd = os.open(env_path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+    with os.fdopen(fd, "w", encoding="utf-8") as env_file:
+        env_file.write(secret_value)
     return env_path
 
 
@@ -61,10 +62,13 @@ mcp = FastMCP("managed-identity-keyvault-sample")
 @mcp.tool()
 def get_config_value(key: str) -> str:
     """Return a value from environment loaded from Key Vault .env secret."""
+    if key not in ALLOWED_CONFIG_KEYS:
+        return ""
     return os.getenv(key, "")
 
 
 def bootstrap() -> None:
+    global ALLOWED_CONFIG_KEYS
     vault_url = os.environ.get("KEY_VAULT_URL")
     if not vault_url:
         raise RuntimeError("KEY_VAULT_URL environment variable is required")
@@ -72,6 +76,8 @@ def bootstrap() -> None:
 
     dump_env_from_keyvault(vault_url=vault_url, env_secret_name=env_secret_name)
     load_dotenv(".env")
+    allowed_keys = os.environ.get("MCP_ALLOWED_KEYS", "")
+    ALLOWED_CONFIG_KEYS = {key.strip() for key in allowed_keys.split(",") if key.strip()}
 
 
 if __name__ == "__main__":
