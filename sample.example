@@ -31,12 +31,14 @@ def dump_env_from_keyvault(vault_url: str, env_secret_name: str, output_file: st
         ) from exc
 
     env_path = Path(output_file)
-    if env_path.is_absolute() or ".." in env_path.parts or env_path.name != ".env":
+    base_env_path = (Path.cwd().resolve() / ".env").resolve()
+    resolved_env_path = (Path.cwd().resolve() / env_path).resolve()
+    if env_path.is_absolute() or env_path.name != ".env" or resolved_env_path != base_env_path:
         raise ValueError("output_file must be a local '.env' file path")
-    fd = os.open(env_path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+    fd = os.open(resolved_env_path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
     with os.fdopen(fd, "w", encoding="utf-8") as env_file:
         env_file.write(secret_value)
-    return env_path
+    return resolved_env_path
 
 
 def load_dotenv(path: str = ".env") -> None:
