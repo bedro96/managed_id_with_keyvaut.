@@ -23,7 +23,7 @@ def dump_env_from_keyvault(vault_url: str, env_secret_name: str, output_file: st
     base_env_path = (Path.cwd().resolve() / ".env").resolve()
     resolved_env_path = (Path.cwd().resolve() / env_path).resolve()
     if env_path.is_absolute() or env_path.name != ".env" or resolved_env_path != base_env_path:
-        raise ValueError("output_file must be a local '.env' file path")
+        raise ValueError("output_file must be '.env' in the current working directory")
 
     fd = os.open(resolved_env_path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
     try:
@@ -85,5 +85,7 @@ def run_main() -> None:
     load_dotenv(".env")
 
     allowed_keys = parse_allowed_keys(os.environ.get("MCP_ALLOWED_KEYS", ""))
+    if not allowed_keys:
+        raise RuntimeError("MCP_ALLOWED_KEYS must contain at least one allowed key")
     mcp = create_mcp_server(allowed_config_keys=allowed_keys)
     mcp.run()

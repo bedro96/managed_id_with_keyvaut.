@@ -1,7 +1,7 @@
-# managed_id_with_keyvaut.
-managed_id_with_keyvaut
+# managed_id_with_keyvault.
+managed_id_with_keyvault
 
-## sample.example (FastMCP + Key Vault + system managed identity)
+## FastMCP + Key Vault + system managed identity
 
 `sample.example` shows how to:
 - authenticate to Azure Key Vault with **ManagedIdentityCredential**
