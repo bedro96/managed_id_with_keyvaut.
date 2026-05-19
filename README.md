@@ -1,0 +1,2 @@
+# managed_id_with_keyvaut.
+managed_id_with_keyvaut
