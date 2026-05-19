@@ -22,7 +22,12 @@ def dump_env_from_keyvault(vault_url: str, env_secret_name: str, output_file: st
     """Fetch a Key Vault secret and write it as .env file content."""
     credential = ManagedIdentityCredential()
     client = SecretClient(vault_url=vault_url, credential=credential)
-    secret_value = client.get_secret(env_secret_name).value or ""
+    try:
+        secret_value = client.get_secret(env_secret_name).value or ""
+    except Exception as exc:
+        raise RuntimeError(
+            f"Failed to read secret '{env_secret_name}' from Key Vault '{vault_url}'"
+        ) from exc
 
     env_path = Path(output_file)
     env_path.write_text(secret_value, encoding="utf-8")
