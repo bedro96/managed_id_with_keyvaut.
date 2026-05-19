@@ -10,6 +10,7 @@ FastMCP sample:
 from __future__ import annotations
 
 import os
+import sys
 from pathlib import Path
 
 from azure.identity import ManagedIdentityCredential
@@ -27,8 +28,8 @@ def dump_env_from_keyvault(vault_url: str, env_secret_name: str, output_file: st
     env_path.write_text(secret_value, encoding="utf-8")
     try:
         os.chmod(env_path, 0o600)
-    except OSError:
-        pass
+    except OSError as exc:
+        print(f"Warning: could not set secure permissions on {env_path}: {exc}", file=sys.stderr)
     return env_path
 
 
@@ -43,7 +44,10 @@ def load_dotenv(path: str = ".env") -> None:
         if not cleaned or cleaned.startswith("#") or "=" not in cleaned:
             continue
         key, value = cleaned.split("=", 1)
-        os.environ[key.strip()] = value.strip().strip("\"'")
+        normalized_value = value.strip()
+        if len(normalized_value) >= 2 and normalized_value[0] == normalized_value[-1] and normalized_value[0] in {"'", '"'}:
+            normalized_value = normalized_value[1:-1]
+        os.environ[key.strip()] = normalized_value
 
 
 mcp = FastMCP("managed-identity-keyvault-sample")
@@ -56,7 +60,9 @@ def get_config_value(key: str) -> str:
 
 
 def bootstrap() -> None:
-    vault_url = os.environ["KEY_VAULT_URL"]
+    vault_url = os.environ.get("KEY_VAULT_URL")
+    if not vault_url:
+        raise RuntimeError("KEY_VAULT_URL environment variable is required")
     env_secret_name = os.environ.get("KEY_VAULT_ENV_SECRET_NAME", "app-env")
 
     dump_env_from_keyvault(vault_url=vault_url, env_secret_name=env_secret_name)
