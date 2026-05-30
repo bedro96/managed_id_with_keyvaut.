@@ -5,14 +5,12 @@ Vault, fetches a single secret whose value is expected to contain the
 complete contents of a `.env` file, and writes that value to the given
 output path.
 
-Can be imported by other code or run directly from the command line.
+Intended to be imported and reused by other code.
 """
 
 from __future__ import annotations
 
-import argparse
 import os
-import sys
 from pathlib import Path
 
 from azure.identity import ManagedIdentityCredential
@@ -64,48 +62,3 @@ def read_env_from_keyvault(
         env_file.write(secret_value)
 
     return resolved_env_path
-
-
-def _build_arg_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(
-        description=(
-            "Read a Key Vault secret using Managed Identity and dump its "
-            "value to a .env file."
-        )
-    )
-    parser.add_argument(
-        "--vault-url",
-        default=os.environ.get("KEY_VAULT_URL"),
-        help="Key Vault URL (default: $KEY_VAULT_URL).",
-    )
-    parser.add_argument(
-        "--secret-name",
-        default=os.environ.get("KEY_VAULT_ENV_SECRET_NAME", "app-env"),
-        help="Secret name containing the .env content "
-             "(default: $KEY_VAULT_ENV_SECRET_NAME or 'app-env').",
-    )
-    parser.add_argument(
-        "--output-file",
-        default=".env",
-        help="Path of the .env file to write (default: .env).",
-    )
-    return parser
-
-
-def main(argv: list[str] | None = None) -> int:
-    args = _build_arg_parser().parse_args(argv)
-    if not args.vault_url:
-        print("error: --vault-url or KEY_VAULT_URL is required", file=sys.stderr)
-        return 2
-
-    written = read_env_from_keyvault(
-        vault_url=args.vault_url,
-        env_secret_name=args.secret_name,
-        output_file=args.output_file,
-    )
-    print(f"Wrote Key Vault secret content to {written}")
-    return 0
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())

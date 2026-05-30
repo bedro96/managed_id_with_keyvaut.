@@ -4,14 +4,11 @@ Uses a system/user assigned Managed Identity to authenticate to Azure Key
 Vault and stores the complete contents of a `.env` file as the value of
 a single secret.
 
-Can be imported by other code or run directly from the command line.
+Intended to be imported and reused by other code.
 """
 
 from __future__ import annotations
 
-import argparse
-import os
-import sys
 from pathlib import Path
 
 from azure.identity import ManagedIdentityCredential
@@ -56,48 +53,3 @@ def save_env_to_keyvault(
         ) from exc
 
     return stored.id or ""
-
-
-def _build_arg_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(
-        description=(
-            "Save a .env file to Key Vault as a single secret using "
-            "Managed Identity."
-        )
-    )
-    parser.add_argument(
-        "--vault-url",
-        default=os.environ.get("KEY_VAULT_URL"),
-        help="Key Vault URL (default: $KEY_VAULT_URL).",
-    )
-    parser.add_argument(
-        "--secret-name",
-        default=os.environ.get("KEY_VAULT_ENV_SECRET_NAME", "app-env"),
-        help="Secret name to store the .env contents under "
-             "(default: $KEY_VAULT_ENV_SECRET_NAME or 'app-env').",
-    )
-    parser.add_argument(
-        "--input-file",
-        default=".env",
-        help="Path of the .env file to upload (default: .env).",
-    )
-    return parser
-
-
-def main(argv: list[str] | None = None) -> int:
-    args = _build_arg_parser().parse_args(argv)
-    if not args.vault_url:
-        print("error: --vault-url or KEY_VAULT_URL is required", file=sys.stderr)
-        return 2
-
-    save_env_to_keyvault(
-        vault_url=args.vault_url,
-        env_secret_name=args.secret_name,
-        input_file=args.input_file,
-    )
-    print(f"Stored '{args.input_file}' as a Key Vault secret")
-    return 0
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())
