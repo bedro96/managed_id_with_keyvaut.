@@ -1,0 +1,21 @@
+[project]
+name = "managed-id-with-keyvault"
+version = "0.1.0"
+description = "Reusable utilities to read/write a .env file as a single Azure Key Vault secret using Managed Identity, plus a FastMCP sample server."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "azure-identity>=1.15.0",
+    "azure-keyvault-secrets>=4.7.0",
+    "fastmcp>=0.1.0",
+]
+
+[project.scripts]
+managed-id-keyvault-mcp = "utility.keyvault_mcp:run_main"
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["utility"]
