@@ -13,6 +13,11 @@ DEFAULT_SECRET_NAME = "app-env"
 EXPORT_PREFIX = "export "
 MASK_THRESHOLD = 6
 MASK_PREFIX_SUFFIX_LEN = 2
+TEST_PAGE_STYLE = """
+body { font-family: system-ui, sans-serif; margin: 2rem; }
+table { border-collapse: collapse; min-width: 24rem; }
+th, td { border: 1px solid #ddd; padding: 0.5rem 0.75rem; text-align: left; }
+"""
 
 
 @dataclass(frozen=True)
@@ -184,16 +189,12 @@ def render_test_page(path: str | Path = ".env", *, show_values: bool = False) ->
             "</tr>"
         )
     body = "\n".join(rows) or '<tr><td colspan="2">No values found.</td></tr>'
-    return f"""<!doctype html>
+    return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <title>Key Vault .env verification</title>
-  <style>
-    body {{ font-family: system-ui, sans-serif; margin: 2rem; }}
-    table {{ border-collapse: collapse; min-width: 24rem; }}
-    th, td {{ border: 1px solid #ddd; padding: 0.5rem 0.75rem; text-align: left; }}
-  </style>
+  <style>{TEST_PAGE_STYLE}</style>
 </head>
 <body>
   <h1>Key Vault .env verification</h1>
