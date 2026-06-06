@@ -51,14 +51,16 @@ def parse_env_text(content: str) -> dict[str, str]:
     values: dict[str, str] = {}
     for line in content.splitlines():
         cleaned = line.strip()
-        if not cleaned or cleaned.startswith("#") or "=" not in cleaned:
+        if not cleaned or cleaned.startswith("#"):
             continue
         if cleaned.startswith(EXPORT_PREFIX):
             cleaned = cleaned.removeprefix(EXPORT_PREFIX).lstrip()
+        if "=" not in cleaned:
+            continue
         key, value = cleaned.split("=", 1)
         key = key.strip()
         if not key:
-            continue
+            raise ValueError("Malformed .env line contains an empty key")
         normalized_value = value.strip()
         if (
             len(normalized_value) >= 2
@@ -165,7 +167,7 @@ def format_env_preview(path: str | Path = ".env", *, show_values: bool = False) 
 def _mask_value(value: str) -> str:
     if value == "":
         return "<empty>"
-    if len(value) <= 4:
+    if len(value) <= 6:
         return "****"
     return f"{value[:2]}***{value[-2:]}"
 

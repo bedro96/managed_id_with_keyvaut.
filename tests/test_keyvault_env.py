@@ -25,15 +25,26 @@ def test_parse_env_text_handles_comments_quotes_and_export() -> None:
 
 
 def test_write_load_and_preview_env_file(tmp_path: Path) -> None:
-    env_path = keyvault_env.write_env_file("FOO=secret\nSMALL=abc\nEMPTY=\n", tmp_path / ".env")
+    env_path = keyvault_env.write_env_file(
+        "FOO=longsecret\nSMALL=abc\nEMPTY=\n", tmp_path / ".env"
+    )
 
     loaded = keyvault_env.load_env_file(env_path)
     preview = keyvault_env.format_env_preview(env_path)
 
-    assert loaded == {"EMPTY": "", "FOO": "secret", "SMALL": "abc"}
+    assert loaded == {"EMPTY": "", "FOO": "longsecret", "SMALL": "abc"}
     assert "EMPTY=<empty>" in preview
-    assert "FOO=se***et" in preview
+    assert "FOO=lo***et" in preview
     assert "SMALL=****" in preview
+
+
+def test_parse_env_text_rejects_empty_keys() -> None:
+    try:
+        keyvault_env.parse_env_text("=missing\n")
+    except ValueError as exc:
+        assert "empty key" in str(exc)
+    else:
+        raise AssertionError("Expected ValueError for empty .env key")
 
 
 def test_render_test_page_escapes_values(tmp_path: Path) -> None:
