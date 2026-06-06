@@ -1,4 +1,4 @@
-# managed_id_with_keyvault
+# managed-id-with-keyvault
 
 Python helpers to retrieve an application `.env` file from Azure Key Vault as soon as
 your Python process starts, then load the values into `os.environ` for the rest of

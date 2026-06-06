@@ -103,9 +103,9 @@ def retrieve_env_from_keyvault(
     *,
     output_file: str | Path = ".env",
     use_managed_identity: bool = True,
-    load_into_environment: bool = True,
+    load_into_os_environ: bool = True,
 ) -> EnvFileResult:
-    """Retrieve a Key Vault secret that contains .env content and write it locally."""
+    """Retrieve .env content, write it locally, and optionally load os.environ."""
     client = _secret_client(vault_url, use_managed_identity)
     try:
         secret_value = client.get_secret(env_secret_name).value or ""
@@ -115,7 +115,7 @@ def retrieve_env_from_keyvault(
         ) from exc
 
     env_path = write_env_file(secret_value, output_file)
-    values = load_env_file(env_path) if load_into_environment else parse_env_text(secret_value)
+    values = load_env_file(env_path) if load_into_os_environ else parse_env_text(secret_value)
     return EnvFileResult(path=env_path, keys=tuple(sorted(values)))
 
 
@@ -221,7 +221,7 @@ def serve_test_page(
             self.wfile.write(page)
 
         def log_message(self, msg_format: str, *args: object) -> None:
-            # Keep the local verification page output focused on startup instructions.
+            # Suppress HTTP request logs to keep output focused on the server address.
             return
 
     server = ThreadingHTTPServer((host, port), Handler)
@@ -295,7 +295,7 @@ def main(argv: list[str] | None = None) -> None:
             env_secret_name=args.secret_name,
             output_file=args.output_file,
             use_managed_identity=not args.dev_auth,
-            load_into_environment=not args.no_load,
+            load_into_os_environ=not args.no_load,
         )
         print(f"Retrieved {len(result.keys)} values into {result.path}")
         print(format_env_preview(result.path, show_values=args.show_values))
