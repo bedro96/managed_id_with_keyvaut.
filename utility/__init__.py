@@ -1,2 +1,1 @@
-"""Utility package for reusable Key Vault and MCP helpers."""
-
+"""Utility package for reusable Key Vault .env helpers."""

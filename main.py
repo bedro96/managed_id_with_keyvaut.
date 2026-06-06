@@ -1,6 +1,5 @@
-from utility.keyvault_mcp import run_main
+from utility.keyvault_env import main
 
 
 if __name__ == "__main__":
-    run_main()
-
+    main()
