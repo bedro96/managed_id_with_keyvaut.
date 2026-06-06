@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from pytest import MonkeyPatch
+from pytest import CaptureFixture, MonkeyPatch
 
 from utility import keyvault_env
 
@@ -87,3 +87,22 @@ def test_upload_env_to_keyvault_sets_secret(monkeypatch: MonkeyPatch, tmp_path: 
 
     assert result.keys == ("FOO",)
     assert calls == [("app-env", "FOO=bar\n", "text/plain")]
+
+
+def test_main_without_command_bootstraps_and_prints(
+    monkeypatch: MonkeyPatch, capsys: CaptureFixture[str]
+) -> None:
+    monkeypatch.setenv("KEY_VAULT_URL", "https://example.vault.azure.net/")
+
+    def bootstrap_env_from_keyvault(*, use_managed_identity: bool = True) -> keyvault_env.EnvFileResult:
+        assert use_managed_identity is True
+        return keyvault_env.EnvFileResult(path=Path(".env").resolve(), keys=("FOO",))
+
+    monkeypatch.setattr(keyvault_env, "bootstrap_env_from_keyvault", bootstrap_env_from_keyvault)
+    monkeypatch.setattr(keyvault_env, "format_env_preview", lambda path: "FOO=****")
+
+    keyvault_env.main([])
+
+    captured = capsys.readouterr()
+    assert "Retrieved 1 values into" in captured.out
+    assert "FOO=****" in captured.out

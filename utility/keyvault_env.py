@@ -10,6 +10,7 @@ from typing import Any
 
 
 DEFAULT_SECRET_NAME = "app-env"
+EXPORT_PREFIX = "export "
 
 
 @dataclass(frozen=True)
@@ -52,8 +53,8 @@ def parse_env_text(content: str) -> dict[str, str]:
         cleaned = line.strip()
         if not cleaned or cleaned.startswith("#") or "=" not in cleaned:
             continue
-        if cleaned.startswith("export "):
-            cleaned = cleaned[7:].lstrip()
+        if cleaned.startswith(EXPORT_PREFIX):
+            cleaned = cleaned.removeprefix(EXPORT_PREFIX).lstrip()
         key, value = cleaned.split("=", 1)
         key = key.strip()
         if not key:
@@ -219,7 +220,7 @@ def serve_test_page(
             self.end_headers()
             self.wfile.write(page)
 
-        def log_message(self, format: str, *args: object) -> None:
+        def log_message(self, msg_format: str, *args: object) -> None:
             return
 
     server = ThreadingHTTPServer((host, port), Handler)
