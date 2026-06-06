@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from pytest import MonkeyPatch
+
 from utility import keyvault_env
 
 
@@ -43,7 +45,9 @@ def test_render_test_page_escapes_values(tmp_path: Path) -> None:
     assert "<script>alert(1)</script>" not in page
 
 
-def test_retrieve_env_from_keyvault_uses_dev_auth_and_loads(monkeypatch: object, tmp_path: Path) -> None:
+def test_retrieve_env_from_keyvault_uses_dev_auth_and_loads(
+    monkeypatch: MonkeyPatch, tmp_path: Path
+) -> None:
     class Secret:
         value = "FOO=bar\n"
 
@@ -65,7 +69,7 @@ def test_retrieve_env_from_keyvault_uses_dev_auth_and_loads(monkeypatch: object,
     assert result.keys == ("FOO",)
 
 
-def test_upload_env_to_keyvault_sets_secret(monkeypatch: object, tmp_path: Path) -> None:
+def test_upload_env_to_keyvault_sets_secret(monkeypatch: MonkeyPatch, tmp_path: Path) -> None:
     calls: list[tuple[str, str, str]] = []
 
     class Client:
