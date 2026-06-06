@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
 from pytest import CaptureFixture, MonkeyPatch
 
 from utility import keyvault_env
@@ -39,12 +40,8 @@ def test_write_load_and_preview_env_file(tmp_path: Path) -> None:
 
 
 def test_parse_env_text_rejects_empty_keys() -> None:
-    try:
+    with pytest.raises(ValueError, match="line 1.*empty key"):
         keyvault_env.parse_env_text("=missing\n")
-    except ValueError as exc:
-        assert "empty key" in str(exc)
-    else:
-        raise AssertionError("Expected ValueError for empty .env key")
 
 
 def test_render_test_page_escapes_values(tmp_path: Path) -> None:

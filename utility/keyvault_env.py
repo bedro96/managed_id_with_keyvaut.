@@ -11,6 +11,8 @@ from typing import Any
 
 DEFAULT_SECRET_NAME = "app-env"
 EXPORT_PREFIX = "export "
+MASK_THRESHOLD = 6
+MASK_PREFIX_SUFFIX_LEN = 2
 
 
 @dataclass(frozen=True)
@@ -49,7 +51,7 @@ def _secret_client(vault_url: str, use_managed_identity: bool) -> Any:
 def parse_env_text(content: str) -> dict[str, str]:
     """Parse KEY=VALUE lines from .env content."""
     values: dict[str, str] = {}
-    for line in content.splitlines():
+    for line_number, line in enumerate(content.splitlines(), start=1):
         cleaned = line.strip()
         if not cleaned or cleaned.startswith("#"):
             continue
@@ -60,7 +62,7 @@ def parse_env_text(content: str) -> dict[str, str]:
         key, value = cleaned.split("=", 1)
         key = key.strip()
         if not key:
-            raise ValueError("Malformed .env line contains an empty key")
+            raise ValueError(f"Malformed .env line {line_number} contains an empty key")
         normalized_value = value.strip()
         if (
             len(normalized_value) >= 2
@@ -167,9 +169,9 @@ def format_env_preview(path: str | Path = ".env", *, show_values: bool = False) 
 def _mask_value(value: str) -> str:
     if value == "":
         return "<empty>"
-    if len(value) <= 6:
+    if len(value) <= MASK_THRESHOLD:
         return "****"
-    return f"{value[:2]}***{value[-2:]}"
+    return f"{value[:MASK_PREFIX_SUFFIX_LEN]}***{value[-MASK_PREFIX_SUFFIX_LEN:]}"
 
 
 def render_test_page(path: str | Path = ".env", *, show_values: bool = False) -> str:
@@ -224,7 +226,7 @@ def serve_test_page(
 
         def log_message(self, msg_format: str, *args: object) -> None:
             # Suppress HTTP request logs to keep output focused on the server address.
-            return
+            pass
 
     server = ThreadingHTTPServer((host, port), Handler)
     print(f"Serving verification page at http://{host}:{port}")
