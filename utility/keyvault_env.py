@@ -224,7 +224,7 @@ def serve_test_page(
             self.end_headers()
             self.wfile.write(page)
 
-        def log_message(self, msg_format: str, *args: object) -> None:
+        def log_message(self, _msg_format: str, *_args: object) -> None:
             # Suppress HTTP request logs to keep output focused on the server address.
             pass
 
