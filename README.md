@@ -103,6 +103,12 @@ Use `--dev-auth` to test with local Azure developer credentials instead of Manag
 Identity:
 
 ```bash
+python main.py --dev-auth
+```
+
+Or with explicit download options:
+
+```bash
 python main.py download \
   --vault-url "https://<vault-name>.vault.azure.net/" \
   --secret-name app-env \

@@ -221,6 +221,7 @@ def serve_test_page(
             self.wfile.write(page)
 
         def log_message(self, msg_format: str, *args: object) -> None:
+            # Keep the local verification page output focused on startup instructions.
             return
 
     server = ThreadingHTTPServer((host, port), Handler)
@@ -250,6 +251,12 @@ def _vault_url_from_args(value: str | None) -> str:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Azure Key Vault .env bootstrap utility")
+    parser.add_argument(
+        "--dev-auth",
+        dest="bootstrap_dev_auth",
+        action="store_true",
+        help="Use DefaultAzureCredential for the no-command bootstrap path",
+    )
     subcommands = parser.add_subparsers(dest="command")
 
     download = subcommands.add_parser("download", help="Retrieve .env content from Key Vault")
@@ -310,7 +317,7 @@ def main(argv: list[str] | None = None) -> None:
             show_values=args.show_values,
         )
     else:
-        result = bootstrap_env_from_keyvault()
+        result = bootstrap_env_from_keyvault(use_managed_identity=not args.bootstrap_dev_auth)
         print(f"Retrieved {len(result.keys)} values into {result.path}")
         print(format_env_preview(result.path))
 
