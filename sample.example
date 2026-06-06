@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-from utility.keyvault_mcp import run_main
+from utility.keyvault_env import bootstrap_env_from_keyvault
 
 
 if __name__ == "__main__":
-    run_main()
+    bootstrap_env_from_keyvault()
