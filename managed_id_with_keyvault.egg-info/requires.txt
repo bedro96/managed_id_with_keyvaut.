@@ -1,7 +1,0 @@
-azure-identity>=1.16.0
-azure-keyvault-secrets>=4.8.0
-
-[dev]
-mypy>=1.10
-pytest>=8.0
-ruff>=0.5
